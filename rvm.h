@@ -10,6 +10,7 @@ typedef struct {
   char *directory;
   void *ptrs[4];
   segment_t *segments;
+  int no_of_segments;
 } rvm_t;
 
 /* create an rvm instance and return it */

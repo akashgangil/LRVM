@@ -6,7 +6,7 @@
 int main(int argc, char **argv) {
   rvm_t rvm;
   segment_t segment;
-  
+
   rvm = rvm_init("rvm_segments");
   printf("%s\n", rvm.directory);
 
