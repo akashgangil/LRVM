@@ -4,7 +4,8 @@
 typedef struct {
   char *name;
   int size;
-  void *ptr;
+  void *client_ptr;
+  void *log_ptr;
 } segment_t;
 
 typedef struct {
@@ -18,6 +19,6 @@ typedef struct {
 rvm_t rvm_init(const char *directory);
 
 /* create or extend a extend and return pointer to allocated memory */
-segment_t rvm_map(rvm_t rvm, const char *seg_name, int size_to_create);
+void *rvm_map(rvm_t rvm, const char *seg_name, int size_to_create);
 
 #endif

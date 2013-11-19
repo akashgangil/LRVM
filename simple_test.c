@@ -5,15 +5,15 @@
 
 int main(int argc, char **argv) {
   rvm_t rvm;
+  char *segs[1];
   segment_t segment;
 
   rvm = rvm_init("rvm_segments");
   printf("%s\n", rvm.directory);
 
-  segment = rvm_map(rvm, "testseg", 1000);
-  printf("%s %d\n", segment.name, segment.size);
+  segs[0] = (char *) rvm_map(rvm, "testseg", 1000);
 
-  printf("%s %d\n", rvm.segments[0]->name, rvm.segments[0]->size);
+  sprintf(segs[0], "hello, world");
 
   return 0;
 }

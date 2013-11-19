@@ -22,7 +22,7 @@ rvm_t rvm_init(const char *directory){
   return *rvm;
 }
 
-segment_t rvm_map(rvm_t rvm, const char *seg_name, int size_to_create){
+void *rvm_map(rvm_t rvm, const char *seg_name, int size_to_create){
   segment_t *segment = malloc(sizeof(segment_t));
 
   /* create a string with segment name */
@@ -32,9 +32,11 @@ segment_t rvm_map(rvm_t rvm, const char *seg_name, int size_to_create){
 
   segment->size = size_to_create;
 
-  /* segment->ptr = (void *)malloc(segment->size); */
+  segment->client_ptr = (void *)malloc(segment->size);
+  segment->log_ptr = (void *)malloc(segment->size);
+
   rvm.segments[rvm.no_of_segments] = segment;
   rvm.no_of_segments += 1;
 
-  return *segment;
+  return segment->client_ptr;
 }
