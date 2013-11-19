@@ -4,12 +4,13 @@
 typedef struct {
   char *name;
   int size;
+  void *ptr;
 } segment_t;
 
 typedef struct {
   char *directory;
   void *ptrs[4];
-  segment_t *segments;
+  segment_t **segments;
   int no_of_segments;
 } rvm_t;
 

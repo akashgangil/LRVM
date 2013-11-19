@@ -32,8 +32,9 @@ segment_t rvm_map(rvm_t rvm, const char *seg_name, int size_to_create){
 
   segment->size = size_to_create;
 
+  /* segment->ptr = (void *)malloc(segment->size); */
+  rvm.segments[rvm.no_of_segments] = segment;
   rvm.no_of_segments += 1;
-  rvm.segments[rvm.no_of_segments] = *segment;
 
   return *segment;
 }

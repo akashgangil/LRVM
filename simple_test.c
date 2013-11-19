@@ -13,5 +13,7 @@ int main(int argc, char **argv) {
   segment = rvm_map(rvm, "testseg", 1000);
   printf("%s %d\n", segment.name, segment.size);
 
+  printf("%s %d\n", rvm.segments[0]->name, rvm.segments[0]->size);
+
   return 0;
 }
