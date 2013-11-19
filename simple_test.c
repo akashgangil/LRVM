@@ -4,5 +4,8 @@
 #include "rvm.h"
 
 int main(int argc, char **argv) {
-  printf("%s", "hello world\n");
+  rvm_t rvm;
+
+  rvm = rvm_init("rvm_segments");
+  printf("%s\n", rvm.directory);
 }
