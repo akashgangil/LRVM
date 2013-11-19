@@ -40,3 +40,18 @@ void *rvm_map(rvm_t rvm, const char *seg_name, int size_to_create){
 
   return segment->client_ptr;
 }
+
+/* Since rvm->segments is a list, this is going to mess up when you delete segments. */
+/* You'll have to reorder it once you finish, or maybe use a linked list? */
+void rvm_destroy(rvm_t rvm, const char *seg_name) {
+  segment_t *segment;
+
+  for (int i = 0; i < rvm.no_of_segments; i++) {
+    if(strcmp(rvm.segments[i]->name, seg_name) == 0) {
+      free(rvm.segments[i]->name);
+      free(rvm.segments[i]->client_ptr);
+      free(rvm.segments[i]->log_ptr);
+      free(rvm.segments[i]);
+    }
+  }
+}

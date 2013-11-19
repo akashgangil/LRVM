@@ -21,4 +21,7 @@ rvm_t rvm_init(const char *directory);
 /* create or extend a extend and return pointer to allocated memory */
 void *rvm_map(rvm_t rvm, const char *seg_name, int size_to_create);
 
+/* delete a segment from rvm */
+void rvm_destroy(rvm_t rvm, const char *seg_name);
+
 #endif
