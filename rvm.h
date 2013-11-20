@@ -1,6 +1,6 @@
 #ifndef _RVM_H_
 #define _RVM_H_
-
+  
 typedef struct {
   char *name;
   int size;
@@ -14,6 +14,11 @@ typedef struct {
   segment_t **segments;
   int no_of_segments;
 } rvm_t;
+
+typedef struct {
+  int no_of_rvms;
+  rvm_t **rvms;
+} rvm_list_t;
 
 /* create an rvm instance and return it */
 rvm_t rvm_init(const char *directory);

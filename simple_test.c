@@ -16,6 +16,10 @@ int main(int argc, char **argv) {
   segs[0] = (char *) rvm_map(rvm, "testseg", 1000);
 
   sprintf(segs[0], "hello, world");
+  printf("%s\n", segs[0]);
+
+  segs[0] = (char *) rvm_map(rvm, "testseg", 10000);
+  printf("%s\n", segs[0]);
 
   return 0;
 }
