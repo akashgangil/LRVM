@@ -116,7 +116,7 @@ void rvm_unmap(rvm_t rvm, void *seg_base) {
     if(seg_base == local_rvm->segments[i]->client_ptr){
       free(local_rvm->segments[i]->name);
       free(local_rvm->segments[i]->client_ptr);
-      free(local_rvm->segments[i]->client_ptr);
+      free(local_rvm->segments[i]->log_ptr);
       free(local_rvm->segments[i]);
 
       local_rvm->no_of_segments--;
