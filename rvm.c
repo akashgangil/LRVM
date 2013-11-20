@@ -16,15 +16,15 @@ void rvm_list_init(){
 
   /* allocate memeory for 3 rvms */
   rvm_list->rvms = calloc(3, sizeof(rvm_t));
-  
+
   rvm_list->no_of_rvms = 0;
-  
+
   rvm_list_initialised = TRUE;
 }
 
 rvm_t *find_rvm(rvm_t rvm) {
   rvm_t *local_rvm;
-  
+
   /* find our rvm from the list of rvms */
   for(int i = 0; i < rvm_list->no_of_rvms; i++) {
     if (strcmp(rvm.directory, rvm_list->rvms[i]->directory) == 0) {
@@ -59,7 +59,7 @@ rvm_t rvm_init(const char *directory){
   /* add this rvm to our list of rvms */
   rvm_list->rvms[rvm_list->no_of_rvms] = rvm;
   rvm_list->no_of_rvms += 1;
-  
+
   return *rvm;
 }
 
@@ -76,12 +76,12 @@ void *rvm_map(rvm_t rvm, const char *seg_name, int size_to_create){
       /* check if we need increase memory */
       if (local_rvm->segments[i]->size < size_to_create) {
         local_rvm->segments[i]->size = size_to_create;
-        
+
         local_rvm->segments[i]->client_ptr = realloc(local_rvm->segments[i]->client_ptr,
                                                      size_to_create);
         local_rvm->segments[i]->log_ptr = realloc(local_rvm->segments[i]->log_ptr,
                                                   size_to_create);
-        
+
         return local_rvm->segments[i]->client_ptr;
       }
     }
@@ -94,7 +94,10 @@ void *rvm_map(rvm_t rvm, const char *seg_name, int size_to_create){
 
   segment->size = size_to_create;
 
+  /* this is the memory we're going to give to the client */
   segment->client_ptr = (void *)malloc(segment->size);
+
+  /* this is the duplicate memory which we're going to log to */
   segment->log_ptr = (void *)malloc(segment->size);
 
   local_rvm->segments[rvm.no_of_segments] = segment;
@@ -113,13 +116,12 @@ void rvm_unmap(rvm_t rvm, void *seg_base) {
     if(seg_base == local_rvm->segments[i]->client_ptr){
       free(local_rvm->segments[i]->name);
       free(local_rvm->segments[i]->client_ptr);
-      free(local_rvm->segments[i]->log_ptr);
+      free(local_rvm->segments[i]->client_ptr);
       free(local_rvm->segments[i]);
 
       local_rvm->no_of_segments--;
-      
+
       return;
     }
   }
 }
-
