@@ -7,6 +7,9 @@
 #define TRUE 0
 #define FALSE 1
 
+#define NO_OF_RVMS 3
+#define NO_OF_SEGMENTS 5
+
 rvm_list_t *rvm_list;
 int rvm_list_initialised = FALSE;
 
@@ -15,7 +18,7 @@ void rvm_list_init(){
   rvm_list = calloc(1, sizeof(rvm_list_t));
 
   /* allocate memeory for 3 rvms */
-  rvm_list->rvms = calloc(3, sizeof(rvm_t));
+  rvm_list->rvms = calloc(NO_OF_RVMS, sizeof(rvm_t));
 
   rvm_list->no_of_rvms = 0;
 
@@ -51,7 +54,7 @@ rvm_t rvm_init(const char *directory){
 
   /* currently we can have only 5 segments -- we should dynammically allocate */
   /* in the future or use a linked list */
-  rvm->segments = calloc(5, sizeof(segment_t));
+  rvm->segments = calloc(NO_OF_SEGMENTS, sizeof(segment_t));
 
   /* we don't have any segments now */
   rvm->no_of_segments = 0;
