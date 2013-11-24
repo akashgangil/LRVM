@@ -18,7 +18,7 @@ static segment_list_t* segment_list;
 rvm_t rvm_init(const char* directory){
 
   /*Initialize the segment list*/
-  segment_list = (segment_node_t*) malloc( sizeof(segment_node_t*) ); 
+  segment_list = (segment_list_t*) malloc( sizeof(segment_list_t*) ); 
   segment_list = NULL; 
 
   /*Create the backing directory for the RVM*/
@@ -36,7 +36,7 @@ rvm_t rvm_init(const char* directory){
 }
 
 /*Delete the segment file if it exists and is not mapped*/
-void destroy(rvm_t rvm, const char* seg_name){
+void rvm_destroy(rvm_t rvm, const char* seg_name){
 
   while(segment_list != NULL){
    /*  Check if the segment is mapped. If yes return*/  
@@ -52,7 +52,6 @@ void destroy(rvm_t rvm, const char* seg_name){
   char *seg_path = (char*) malloc( strlen(rvm.directory) +strlen(seg_name) + strlen(ext) +1);
   strcpy(seg_path, rvm.directory);
   strcat(seg_path, ext);
-
   if(rmdir(seg_path)){
     perror("Error deleting segment");
   }
