@@ -16,6 +16,12 @@ typedef struct{
   segment_t seg;
 } trans_t;
 
+
+typedef struct seg_list{
+  segment_t segment;
+  struct seg_list* next_seg;  
+} segment_list_t;
+
 rvm_t rvm_init(const char* directory);
 
 void* rvm_map(rvm_t rvm, const char* seg_name, int size_to_create);
