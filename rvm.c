@@ -76,3 +76,8 @@ void* rvm_map(rvm_t rvm, const char* seg_name, int size_to_create){
 
 }
 
+trans_t rvm_begin_trans(rvm_t rvm, int num_segs, void** seg_bases){}
+
+void rvm_about_to_modify(trans_t tid, void* seg_base, int offset, int size){}
+
+void rvm_commit_trans(trans_t tid){}
