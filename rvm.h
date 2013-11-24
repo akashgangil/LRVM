@@ -11,16 +11,14 @@ typedef struct {
   char*     directory;
 } rvm_t;
 
-typedef struct{
-  int       tid;
-  segment_t seg;
-} trans_t;
+typedef int trans_t;
 
-
-typedef struct seg_list{
-  segment_t segment;
-  struct seg_list* next_seg;  
+typedef struct seg_node{
+  segment_t        segment;
+  trans_t          txn;
+  struct seg_node* next_seg;  
 } segment_list_t;
+
 
 rvm_t rvm_init(const char* directory);
 
