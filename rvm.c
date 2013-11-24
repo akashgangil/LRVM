@@ -29,7 +29,7 @@ rvm_t rvm_init(const char* directory){
 
   if(mkdir(rvm->directory, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH) != 0){
     fprintf(stderr,"Could not create RVM directory\n");
-    return;
+    return *rvm;
   }
   
   return *rvm;
