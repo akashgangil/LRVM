@@ -9,6 +9,9 @@
 #include <sys/types.h>
 
 #define LOG_FILE "rvm.log"
+#define COMMIT "COMMIT"
+#define CHECKPOINT "CHECKPOINT"
+#define SEPERATOR ":"
 
 /*Segment List: Maintains a list of segment names currently mapped*/
 static segment_list_t* segment_list;
@@ -203,17 +206,18 @@ void rvm_commit_trans(trans_t tid){
   if(segment_list == NULL) printf("Still NULL :( \n");
 
  
-  check_segment_list();
 
 
   segment_list_t* seg_node = segment_list; 
   while(seg_node != NULL){
     printf("Seg Node : %d\n", seg_node->txn);
     if(seg_node->txn == tid){
-     
+
+/*     
       printf("I am here\n");
      
       segment_t* temp = seg_node->segment;
+
 
       if(temp == NULL)
         printf("Segment is not null\n");
@@ -228,26 +232,41 @@ void rvm_commit_trans(trans_t tid){
       printf("NAME: %s", temp->name); 
       
       printf("^^^^^^^^^^\n");
+*/
+      check_segment_list();
 
-      char* data_to_write = (char*) malloc(strlen(seg_node->segment->name) 
-                                           + strlen((char*)seg_node->segment->data)
-                                           + 1 /*for space*/
-                                           + 1 /*for null char*/
-                                           + 1 /*for newline char*/
-                                           );
-    
-      strcpy(data_to_write, seg_node->segment->name);
-      strcat(data_to_write, " ");
+      printf("EVALLL!!!!\n");
+      printf("%s   %d\n", seg_node->segment->name, strlen(seg_node->segment->name));
+      printf("%s   \n", (char*)seg_node->segment->data);
+
+      int data_size = strlen(seg_node->segment->name)
+                      + strlen(seg_node->segment->data)
+                      + 1 /*for null char*/
+                      + 1 /*for space*/
+                      + 1 /*for newline*/
+                      + strlen(COMMIT)
+                      + 2 * strlen(SEPERATOR)
+                      ;
+
+      printf("data size: %d\n", data_size);                                     
+
+      char* data_to_write = (char*) malloc(sizeof(char)*data_size); 
+      strcpy(data_to_write, COMMIT);
+      strcat(data_to_write, SEPERATOR);
+      strcat(data_to_write, seg_node->segment->name);
+      strcat(data_to_write, SEPERATOR);
       strcat(data_to_write, seg_node->segment->data);
       strcat(data_to_write, "\n");
+    
+      printf("Allocated: %d\n", strlen(data_to_write));
+
+      printf("Data\n");
+      printf("%s", data_to_write);
 
       fwrite(data_to_write, strlen(data_to_write), 1, log_file);     
-      seg_node = seg_node -> next_seg;
-       
     }
     seg_node = seg_node ->next_seg;
   }
-
   printf("Closing the log file\n");
   fclose(log_file);
 }
