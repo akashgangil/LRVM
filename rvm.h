@@ -43,4 +43,6 @@ void rvm_truncate_log(rvm_t rvm);
 
 int file_exist(char* filename);
 
+void check_segment_list(void);
+
 #endif
