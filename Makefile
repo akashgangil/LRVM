@@ -1,13 +1,13 @@
-CC=clang
-OPTIONS= -g -std=c99
+CC=gcc
+OPTIONS= -g 
 
-all: rvm simple_test
+all: main
 
 rvm:
-	$(CC) $(OPTIONS) -o rvm.o -c rvm.c
+	$(CC) $(OPTIONS) -c rvm.c
 
-simple_test:
-	$(CC) $(OPTIONS) -o simple_test.o simple_test.c rvm.o
+main: rvm
+	$(CC) $(OPTIONS) -o main simple_test.c rvm.o
 
 clean:
 	rm *.o

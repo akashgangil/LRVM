@@ -16,7 +16,6 @@ static char* seg_file_ext = ".seg";
 
 static trans_t global_tid = 0;
 
-
 /*initialize the RVM library: creates the base directory*/
 rvm_t rvm_init(const char* directory){
 
@@ -110,16 +109,14 @@ void* rvm_map(rvm_t rvm, const char* seg_name, int size_to_create){
   return (void*)seg;
 }
 
+
 trans_t rvm_begin_trans(rvm_t rvm, int num_segs, void** seg_bases){
 
   int seg_it = 0;
   for(seg_it=0; seg_it < num_segs; ++seg_it){
-  
       while(segment_list != NULL){
-        
         if(!strcmp(segment_list->segment.name, seg_bases[seg_it]))
           if(segment_list->txn != -1) return (trans_t)-1;
-
       }
   }
 
@@ -127,22 +124,22 @@ trans_t rvm_begin_trans(rvm_t rvm, int num_segs, void** seg_bases){
 
   seg_it = 0;
   for(seg_it=0; seg_it<num_segs; ++seg_it){
-  
       while(segment_list != NULL){
-
         if(!strcmp(segment_list->segment.name, seg_bases[seg_it]))
           segment_list->txn = tid;
-        
       }
   }
 
   return tid;
+}
+
+void rvm_about_to_modify(trans_t tid, void* seg_base, int offset, int size){
 
 }
 
-void rvm_about_to_modify(trans_t tid, void* seg_base, int offset, int size){}
-
-void rvm_commit_trans(trans_t tid){}
+void rvm_commit_trans(trans_t tid){
+  
+}
 
 int file_exist (char *filename)
 {

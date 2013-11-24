@@ -4,23 +4,27 @@
 #include "rvm.h"
 
 int main(int argc, char **argv) {
+  
   rvm_t rvm;
-  char *segs[1];
-  segment_t segment;
+  trans_t trans;
+
+  char *seg[1];
 
   rvm = rvm_init("rvm_segments");
-  printf("%s\n", rvm.directory);
-
-  segs[0] = (char *) rvm_map(rvm, "testseg", 1000);
-
-  sprintf(segs[0], "hello, world");
-  printf("%s\n", segs[0]);
-
-  rvm_unmap(rvm, segs[0]);
+  rvm_destroy(rvm, "testseg");
+  printf("Directory: %s\n", rvm.directory);
   
-  segs[0] = (char *) rvm_map(rvm, "testseg", 10000);
-  sprintf(segs[0], "hello, world");
-  printf("%s\n", segs[0]);
+  seg[0] = (char*) rvm_map(rvm, "testseg", 10000);
+
+  trans = rvm_begin_trans(rvm, 1, (void **) seg);
+
+  rvm_about_to_modify(trans, seg[0], 0, 100);
+  sprintf(seg[0], "test string");
+
+  rvm_about_to_modify(trans, seg[0], 1000, 100);
+  sprintf(seg[0]+1000, "test2 string");
+
+  rvm_commit_trans(trans);
 
   return 0;
 }
