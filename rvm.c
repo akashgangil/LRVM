@@ -37,9 +37,11 @@ rvm_t rvm_init(const char* directory) {
   strcpy(rvm->logfile, directory);
   strcat(rvm->logfile, log_file_ext);
 
-  if(mkdir(rvm->directory, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH) != 0){
-    fprintf(stderr,"Failed to create RVM directory\n");
-    return *rvm;
+  if(!file_exist(rvm->directory)){
+    if(mkdir(rvm->directory, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH) != 0){
+      fprintf(stderr,"Failed to create RVM directory\n");
+      return *rvm;
+    }
   }
   
   return *rvm;
@@ -84,14 +86,12 @@ void* rvm_map(rvm_t rvm, const char* seg_name, int size_to_create){
        
   seg->size = size_to_create;
 
-  printf("Created a new segment with name %s\n", seg->name); 
   /*Make a segment node*/
   segment_list_t* new_seg = (segment_list_t*)malloc(sizeof(segment_list_t*));
   new_seg->segment  = seg;
   new_seg->next_seg = NULL;
   new_seg->txn      = -1;
 
-  printf("Adding the segment to the list\n");
   /*Add the segment to the list of segments*/
   segment_list_t* seg_node = segment_list;
   if(seg_node == NULL)
@@ -100,12 +100,6 @@ void* rvm_map(rvm_t rvm, const char* seg_name, int size_to_create){
     while(seg_node -> next_seg != NULL);
     seg_node->next_seg = new_seg;
   }
-
-  printf("ADDED SEGMENT DETAILS\n");
-  printf("%s\n", segment_list->segment->name);
-  printf("%d\n", segment_list->segment->size);
-  printf("%s\n", (char*)segment_list->segment->data);
-
 
 
   /*
@@ -213,32 +207,6 @@ void rvm_commit_trans(trans_t tid){
     printf("Seg Node : %d\n", seg_node->txn);
     if(seg_node->txn == tid){
 
-/*     
-      printf("I am here\n");
-     
-      segment_t* temp = seg_node->segment;
-
-
-      if(temp == NULL)
-        printf("Segment is not null\n");
-      else 
-          printf("NO LCUE\n");
-
-      printf("NuMBER: %d\n", temp->size);
-      printf("************\n");
-      check_segment_list();
-      printf("************\n");
-
-      printf("NAME: %s", temp->name); 
-      
-      printf("^^^^^^^^^^\n");
-*/
-      check_segment_list();
-
-      printf("EVALLL!!!!\n");
-      printf("%s   %d\n", seg_node->segment->name, strlen(seg_node->segment->name));
-      printf("%s   \n", (char*)seg_node->segment->data);
-
       int data_size = strlen(seg_node->segment->name)
                       + strlen(seg_node->segment->data)
                       + 1 /*for null char*/
@@ -271,7 +239,21 @@ void rvm_commit_trans(trans_t tid){
   fclose(log_file);
 }
 
-void rvm_about_to_modify(trans_t tid, void* seg_base, int offset, int size){}
+void rvm_about_to_modify(trans_t tid, void* seg_base, int offset, int size){
+
+  printf("About to modify\n");
+  
+  segment_list_t* seg_node = segment_list;
+
+  while(seg_node != NULL){
+    if(seg_node->txn == tid && seg_node->segment->data == seg_base){
+      seg_node->offset = offset;
+      seg_node->size   = size;
+    }
+    seg_node = seg_node -> next_seg;
+  }  
+
+}
 
 int file_exist (char *filename)
 {

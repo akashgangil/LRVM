@@ -15,4 +15,4 @@ basic: rvm
 	$(CC) $(OPTIONS) -o basic $(TESTCASESDIR)/basic.c rvm.o
 
 clean:
-	rm *.o main basic rvm.log
+	rm -rf *.o main basic rvm.log rvm_segments

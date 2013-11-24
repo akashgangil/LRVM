@@ -15,8 +15,10 @@ typedef struct {
 typedef int trans_t;
 
 typedef struct seg_node{
-  segment_t*        segment;
+  segment_t*       segment;
   trans_t          txn;
+  int              offset;
+  int              size;
   struct seg_node* next_seg;  
 } segment_list_t;
 
