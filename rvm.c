@@ -116,11 +116,10 @@ trans_t rvm_begin_trans(rvm_t rvm, int num_segs, void** seg_bases){
   for(seg_it=0; seg_it < num_segs; ++seg_it){
   
       while(segment_list != NULL){
-
-        if(!strcmp(segment_list->segment.name, seg_bases[seg_it])){
-
+        
+        if(!strcmp(segment_list->segment.name, seg_bases[seg_it]))
           if(segment_list->txn != -1) return (trans_t)-1;
-        }
+
       }
   }
 
