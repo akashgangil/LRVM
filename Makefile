@@ -1,7 +1,9 @@
 CC=gcc
 OPTIONS= -g 
 
-all: main
+TESTCASESDIR=testcases
+
+all: main basic
 
 rvm:
 	$(CC) $(OPTIONS) -c rvm.c
@@ -9,5 +11,8 @@ rvm:
 main: rvm
 	$(CC) $(OPTIONS) -o main simple_test.c rvm.o
 
+basic: rvm
+	$(CC) $(OPTIONS) -o basic $(TESTCASESDIR)/basic.c rvm.o
+
 clean:
-	rm *.o
+	rm *.o main basic rvm.log
