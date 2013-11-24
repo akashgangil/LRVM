@@ -9,12 +9,13 @@ typedef struct {
 
 typedef struct {
   char*     directory;
+  char*     logfile;
 } rvm_t;
 
 typedef int trans_t;
 
 typedef struct seg_node{
-  segment_t        segment;
+  segment_t*        segment;
   trans_t          txn;
   struct seg_node* next_seg;  
 } segment_list_t;
