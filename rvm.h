@@ -42,4 +42,6 @@ void rvm_abort_trans(trans_t tid);
 
 void rvm_truncate_log(rvm_t rvm);
 
+int file_exist(char* filename);
+
 #endif
