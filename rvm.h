@@ -2,34 +2,38 @@
 #define _RVM_H_
   
 typedef struct {
-  char *name;
-  int size;
-  void *client_ptr;
-  void *log_ptr;
+  char*     name;
+  int       size;
+  void*     data;
 } segment_t;
 
 typedef struct {
-  char *directory;
-  void *ptrs[4];
-  segment_t **segments;
-  int no_of_segments;
+  char*     directory;
 } rvm_t;
 
-typedef struct {
-  int no_of_rvms;
-  rvm_t **rvms;
-} rvm_list_t;
+typedef struct{
+  int       tid;
+  segment_t seg;
+} trans_t;
 
-/* create an rvm instance and return it */
-rvm_t rvm_init(const char *directory);
+rvm_t rvm_init(const char* directory);
 
-/* create or extend a extend and return pointer to allocated memory */
-void *rvm_map(rvm_t rvm, const char *seg_name, int size_to_create);
+void* rvm_map(rvm_t rvm, const char* seg_name, int size_to_create);
 
+void rvm_unmap(rvm_t rvm, void* seg_base);
 
-void rvm_destroy(rvm_t rvm, const char *seg_name);
+void rvm_destroy(rvm_t rvm, const char* seg_name);
 
-/* delete a segment from rvm */
-void rvm_unmap(rvm_t rvm, void *seg_base);
+trans_t rvm_begin_trans(rvm_t rvm, int num_segs, void** seg_bases);
+
+void rvm_about_to_modify(trans_t tid, void* seg_base, int offset, int size);
+
+void rvm_commit_trans(trans_t tid);
+
+void rvm_commit_trans_heavy(trans_t tid);
+
+void rvm_abort_trans(trans_t tid);
+
+void rvm_truncate_log(rvm_t rvm);
 
 #endif
