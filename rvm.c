@@ -28,8 +28,8 @@ rvm_t rvm_init(const char* directory){
   strcpy(rvm -> directory, directory);
 
   if(mkdir(rvm->directory, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH) != 0){
-    perror("Couldnt create RVM directory");
-    exit(1);
+    fprintf(stderr,"Could not create RVM directory\n");
+    return;
   }
   
   return *rvm;
@@ -41,7 +41,7 @@ void rvm_destroy(rvm_t rvm, const char* seg_name){
   while(segment_list != NULL){
    /*  Check if the segment is mapped. If yes return*/  
     if(strcmp(seg_name, segment_list->segment.name)){
-        perror("Segment is currently mapped. Unable to delete");
+        fprintf(stderr, "Segment is currently mapped. Unable to delete");
         return;
     }
     segment_list = segment_list->next_seg;    
@@ -52,14 +52,27 @@ void rvm_destroy(rvm_t rvm, const char* seg_name){
   char *seg_path = (char*) malloc( strlen(rvm.directory) +strlen(seg_name) + strlen(ext) +1);
   strcpy(seg_path, rvm.directory);
   strcat(seg_path, ext);
+  
   if(rmdir(seg_path)){
-    perror("Error deleting segment");
+    fprintf(stderr, "Error deleting segment\n");
   }
+  
   free(seg_path);
 }
 
 /*Map the segment from disk to memory, if it doesnt exist on disk create it*/
 void* rvm_map(rvm_t rvm, const char* seg_name, int size_to_create){
+  
+  segment_t* seg = (segment_t*) calloc(1, sizeof(segment_t));
+  
+  seg->name = (char*) malloc(sizeof( strlen(seg_name) +  1));
+  strcpy(seg->name, seg_name);
+
+  if(seg->size < size_to_create)
+      seg->data = (void*)realloc(seg, size_to_create);
+       
+  seg->size = size_to_create;
+  return (void*)seg;
 
 }
 
