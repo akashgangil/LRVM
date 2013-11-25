@@ -112,19 +112,18 @@ void* rvm_map(rvm_t rvm, const char* seg_name, int size_to_create){
     }
 
     /*
-     * Check if a backing file for that segment exists
-     * and if yes, load the data
-     */
-    /*FILE* seg_file;
-      char* seg_file_path = (char*)malloc(  strlen(rvm.directory) 
-      + strlen(seg_name) + strlen(seg_file_ext)+1);
+     * LOGIC to read from the backing file should go here
+     *
+        FILE* seg_file;
+        char* seg_file_path = (char*)malloc(  strlen(rvm.directory) 
+        + strlen(seg_name) + strlen(seg_file_ext)+1);
 
-      printf("HERE1\n");
-      strcpy(seg_file_path, rvm.directory);
-      strcat(seg_file_path, "/");
-      strcat(seg_file_path, seg_name);
-      strcat(seg_file_path, seg_file_ext);
-      printf("HERE2\n");
+        printf("HERE1\n");
+        strcpy(seg_file_path, rvm.directory);
+        strcat(seg_file_path, "/");
+        strcat(seg_file_path, seg_name);
+        strcat(seg_file_path, seg_file_ext);
+        printf("HERE2\n");
       */
 
     /*Check if the segment is in the log file*/
@@ -142,20 +141,26 @@ void* rvm_map(rvm_t rvm, const char* seg_name, int size_to_create){
 
         char *ch1, *ch2, *token1, *token2;
         char line[LINE_MAX];
-        int token_count;
+        int token_count1, token_count2, pos;
         
         if(log_file != NULL){
             while(fgets(line, LINE_MAX, log_file) != NULL){
-                token_count = 0;
+                token_count1 = 0;
                 token1 = strtok_r(line, ":", &ch1);
                 while(token1 != NULL){
-                    token_count++;
-                    if(token_count == 2)
+                    token_count1++;
+                    if(token_count1 == 2)
                         if(strcmp(token1, seg_name)) break;
-                    if(token_count > 2){
+                    if(token_count1 > 2){
+                        token_count2 = 0; pos = 0;
                         char *token2 = strtok_r(token1, "-", &ch2);
                         while(token2 != NULL){
-                            printf("%s\n", token2);
+                            token_count2++;
+                            if(token_count2 == 1) pos = atoi(token2);
+                            if(token_count2 == 3) {
+                                strcpy((char*)seg->data + pos, token2);
+    //                            printf("PUT token2  \n%s \n[%s]\n", token2,  (char*)seg->data+pos);
+                            }
                             token2 = strtok_r(NULL, "-", &ch2);
                         }
                     }
@@ -167,7 +172,7 @@ void* rvm_map(rvm_t rvm, const char* seg_name, int size_to_create){
         fclose(log_file); 
     }
 
-    printf("Returning\n");
+   // printf("Returning\n");
     return seg->data;
 }
 
@@ -177,7 +182,7 @@ trans_t rvm_begin_trans(rvm_t rvm, int num_segs, void** seg_bases){
     segment_list_t* seg_node = segment_list;
     int seg_it = 0;
 
-    printf("Beginning Transaction\n");
+    //printf("Beginning Transaction\n");
 
     for(seg_it=0; seg_it < num_segs; ++seg_it){
         while(seg_node!= NULL){
@@ -276,8 +281,6 @@ void rvm_commit_trans(trans_t tid){
                 strcat(data_to_write, off);
                 base_offset = base_offset -> next_offset;
             }
-
-            strcat(data_to_write, "\n");
 
             fwrite(data_to_write, strlen(data_to_write), 1, log_file);     
         }
