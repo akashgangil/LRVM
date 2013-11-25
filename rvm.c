@@ -207,7 +207,7 @@ void check_segment_list(){
 
 void rvm_commit_trans(trans_t tid){
  
-  check_segment_list();
+  //check_segment_list();
 
   FILE* log_file;
   log_file = fopen(LOG_FILE, "a");
@@ -246,7 +246,7 @@ void rvm_commit_trans(trans_t tid){
       offset_t* base_offset = seg_node -> offset;
       while(base_offset != NULL) {
         strcat(data_to_write, SEPERATOR);
-        char off[10];
+        char off[100];
         sprintf(off, "%d-%d-%s", base_offset->offset_val
                                , base_offset->size
                                , (char*)(seg_node->segment->data)+base_offset->offset_val);
@@ -260,6 +260,7 @@ void rvm_commit_trans(trans_t tid){
     }
     seg_node = seg_node ->next_seg;
   }
+  printf("Log file closed\n");
   fclose(log_file);
 }
 
