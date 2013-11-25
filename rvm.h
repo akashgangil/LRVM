@@ -14,11 +14,16 @@ typedef struct {
 
 typedef int trans_t;
 
+typedef struct offset_node {
+  int                 offset_val;
+  int                 size;
+  struct offset_node* next_offset;
+} offset_t;
+
 typedef struct seg_node{
   segment_t*       segment;
   trans_t          txn;
-  int              offset;
-  int              size;
+  offset_t*        offset;
   struct seg_node* next_seg;  
 } segment_list_t;
 

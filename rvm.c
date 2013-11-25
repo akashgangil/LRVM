@@ -45,7 +45,6 @@ rvm_t rvm_init(const char* directory) {
   }
   
   return *rvm;
-
 }
 
 /*Delete the segment file if it exists and is not mapped*/
@@ -81,6 +80,8 @@ void rvm_destroy(rvm_t rvm, const char* seg_name){
 /*Map the segment from disk to memory, if it doesnt exist on disk create it*/
 void* rvm_map(rvm_t rvm, const char* seg_name, int size_to_create){
 
+  fprintf(stdout, "rvm_map called\n");
+  
   segment_t* seg = (segment_t*) calloc(1, sizeof(segment_t));
   
   seg->name = (char*) malloc(sizeof( strlen(seg_name) +  1));
@@ -91,10 +92,11 @@ void* rvm_map(rvm_t rvm, const char* seg_name, int size_to_create){
   seg->size = size_to_create;
 
   /*Make a segment node*/
-  segment_list_t* new_seg = (segment_list_t*)malloc(sizeof(segment_list_t*));
+  segment_list_t* new_seg = (segment_list_t*)malloc(sizeof(segment_list_t));
   new_seg->segment  = seg;
   new_seg->next_seg = NULL;
   new_seg->txn      = -1;
+  new_seg->offset   = NULL;
 
   /*Add the segment to the list of segments*/
   segment_list_t* seg_node = segment_list;
@@ -105,21 +107,24 @@ void* rvm_map(rvm_t rvm, const char* seg_name, int size_to_create){
     seg_node->next_seg = new_seg;
   }
 
-
   /*
    * Check if a backing file for that segment exists
    * and if yes, load the data
    */
+  /*
   FILE* seg_file;
   char* seg_file_path = (char*)malloc(  strlen(rvm.directory) 
                                  + strlen(seg_name) + strlen(seg_file_ext)+1);
 
+  printf("HERE1\n");
   strcpy(seg_file_path, rvm.directory);
   strcat(seg_file_path, "/");
   strcat(seg_file_path, seg_name);
   strcat(seg_file_path, seg_file_ext);
+  printf("HERE2\n");
 
   if(file_exist(seg_file_path)) {
+  printf("HERE3\n");
 
     printf("FILE EXISTS\n");
 
@@ -138,7 +143,8 @@ void* rvm_map(rvm_t rvm, const char* seg_name, int size_to_create){
 
     fclose(seg_file); 
   }
-
+*/
+  printf("Returning\n");
   return seg->data;
 }
 
@@ -152,6 +158,7 @@ trans_t rvm_begin_trans(rvm_t rvm, int num_segs, void** seg_bases){
 
   for(seg_it=0; seg_it < num_segs; ++seg_it){
       while(seg_node!= NULL){
+        printf("Check\n");
         if(seg_node->segment->data == seg_bases[seg_it])
           if(seg_node->txn != -1) return (trans_t)-1;
         seg_node = seg_node -> next_seg;
@@ -177,6 +184,7 @@ trans_t rvm_begin_trans(rvm_t rvm, int num_segs, void** seg_bases){
 
 void check_segment_list(){
 
+ printf("check_segment_list called\n");
  segment_list_t* segment_node = segment_list;
 
   while(segment_node != NULL){
@@ -185,12 +193,22 @@ void check_segment_list(){
     printf("Name   : %s\n", segment_node->segment->name);
     printf("SIZE:    %d\n", segment_node->segment->size);
     printf("Data:    %s\n", (char*)segment_node->segment->data);
+    printf("Test: .....\n");
+    offset_t* base_offset = segment_node->offset;
+    while(base_offset != NULL) {
+      printf("Offset:  %d\n", base_offset->offset_val);
+      printf("SIZE: %d\n", base_offset->size);
+      base_offset = base_offset -> next_offset;
+    }
+
     segment_node = segment_node -> next_seg;
   }
 }
 
 void rvm_commit_trans(trans_t tid){
-  
+ 
+  check_segment_list();
+
   FILE* log_file;
   log_file = fopen(LOG_FILE, "a");
       
@@ -220,39 +238,56 @@ void rvm_commit_trans(trans_t tid){
                       + 2 * strlen(SEPERATOR)
                       ;
 
-      printf("data size: %d\n", data_size);                                     
-
       char* data_to_write = (char*) malloc(sizeof(char)*data_size); 
       strcpy(data_to_write, COMMIT);
       strcat(data_to_write, SEPERATOR);
       strcat(data_to_write, seg_node->segment->name);
-      strcat(data_to_write, SEPERATOR);
-      strcat(data_to_write, seg_node->segment->data);
-      strcat(data_to_write, "\n");
-    
-      printf("Allocated: %d\n", strlen(data_to_write));
 
-      printf("Data\n");
-      printf("%s", data_to_write);
+      offset_t* base_offset = seg_node -> offset;
+      while(base_offset != NULL) {
+        strcat(data_to_write, SEPERATOR);
+        char off[10];
+        sprintf(off, "%d-%d-%s", base_offset->offset_val
+                               , base_offset->size
+                               , (char*)(seg_node->segment->data)+base_offset->offset_val);
+        strcat(data_to_write, off);
+        base_offset = base_offset -> next_offset;
+      }
+      
+      strcat(data_to_write, "\n");
 
       fwrite(data_to_write, strlen(data_to_write), 1, log_file);     
     }
     seg_node = seg_node ->next_seg;
   }
-  printf("Closing the log file\n");
   fclose(log_file);
 }
 
 void rvm_about_to_modify(trans_t tid, void* seg_base, int offset, int size){
 
-  printf("About to modify\n");
+  printf("About to modify %d  %d\n", offset , size);
   
   segment_list_t* seg_node = segment_list;
 
   while(seg_node != NULL){
     if(seg_node->txn == tid && seg_node->segment->data == seg_base){
-      seg_node->offset = offset;
-      seg_node->size   = size;
+
+      offset_t* new_offset = (offset_t*)malloc(sizeof(offset_t));
+      new_offset -> offset_val = offset;
+      new_offset -> size       = size;
+      new_offset -> next_offset = NULL;
+      
+      offset_t* seg_offset = seg_node->offset;
+
+      if(seg_offset == NULL){
+        seg_node->offset = new_offset;
+      }
+      else{
+        while(seg_offset -> next_offset != NULL)
+          seg_offset = seg_offset->next_offset;
+        seg_offset->next_offset = new_offset;
+      }
+     
     }
     seg_node = seg_node -> next_seg;
   }  
