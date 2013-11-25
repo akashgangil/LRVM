@@ -3,7 +3,7 @@ OPTIONS= -g
 
 TESTCASESDIR=testcases
 
-all: main basic
+all: main basic multi
 
 rvm:
 	$(CC) $(OPTIONS) -c rvm.c
@@ -14,5 +14,8 @@ main: rvm
 basic: rvm
 	$(CC) $(OPTIONS) -o basic $(TESTCASESDIR)/basic.c rvm.o
 
+multi: rvm
+	$(CC) $(OPTIONS) -o multi $(TESTCASESDIR)/multi.c rvm.o
+
 clean:
-	rm -rf *.o main basic rvm.log rvm_segments
+	rm -rf *.o main basic multi rvm.log rvm_segments

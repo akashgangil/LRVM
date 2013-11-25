@@ -159,7 +159,7 @@ void* rvm_map(rvm_t rvm, const char* seg_name, int size_to_create){
                             if(token_count2 == 1) pos = atoi(token2);
                             if(token_count2 == 3) {
                                 strcpy((char*)seg->data + pos, token2);
-    //                            printf("PUT token2  \n%s \n[%s]\n", token2,  (char*)seg->data+pos);
+                                printf("PUT token2  \n%s \n[%s]\n", token2,  (char*)seg->data+pos);
                             }
                             token2 = strtok_r(NULL, "-", &ch2);
                         }
@@ -172,7 +172,7 @@ void* rvm_map(rvm_t rvm, const char* seg_name, int size_to_create){
         fclose(log_file); 
     }
 
-   // printf("Returning\n");
+    printf("Returning\n");
     return seg->data;
 }
 
@@ -182,7 +182,7 @@ trans_t rvm_begin_trans(rvm_t rvm, int num_segs, void** seg_bases){
     segment_list_t* seg_node = segment_list;
     int seg_it = 0;
 
-    //printf("Beginning Transaction\n");
+    printf("Beginning Transaction\n");
 
     for(seg_it=0; seg_it < num_segs; ++seg_it){
         while(seg_node!= NULL){
@@ -194,10 +194,10 @@ trans_t rvm_begin_trans(rvm_t rvm, int num_segs, void** seg_bases){
     }
 
     trans_t tid = global_tid++;
-    seg_node = segment_list;
 
     seg_it = 0;
     for(seg_it=0; seg_it<num_segs; ++seg_it){
+        seg_node = segment_list;
         while(seg_node != NULL){
 
             if(seg_node->segment->data == seg_bases[seg_it])
@@ -207,6 +207,7 @@ trans_t rvm_begin_trans(rvm_t rvm, int num_segs, void** seg_bases){
         }
     }
 
+    printf("TID: %d\n", tid);
     return tid;
 }
 
@@ -235,7 +236,7 @@ void check_segment_list(){
 
 void rvm_commit_trans(trans_t tid){
 
-    //check_segment_list();
+    check_segment_list();
 
     FILE* log_file;
     log_file = fopen(LOG_FILE, "a");
@@ -263,7 +264,7 @@ void rvm_commit_trans(trans_t tid){
                 + 1 /*for space*/
                 + 1 /*for newline*/
                 + strlen(COMMIT)
-                + 2 * strlen(SEPERATOR)
+                + 2 * strlen(SEPERATOR) + 1 + 1
                 ;
 
             char* data_to_write = (char*) malloc(sizeof(char)*data_size); 
@@ -281,7 +282,8 @@ void rvm_commit_trans(trans_t tid){
                 strcat(data_to_write, off);
                 base_offset = base_offset -> next_offset;
             }
-
+            strcat(data_to_write, ":");
+            strcat(data_to_write, "\n");
             fwrite(data_to_write, strlen(data_to_write), 1, log_file);     
         }
         seg_node = seg_node ->next_seg;
@@ -294,6 +296,7 @@ void rvm_about_to_modify(trans_t tid, void* seg_base, int offset, int size){
 
     printf("About to modify %d  %d\n", offset , size);
 
+        //check_segment_list();
     segment_list_t* seg_node = segment_list;
 
     while(seg_node != NULL){
