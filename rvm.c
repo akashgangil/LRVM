@@ -65,11 +65,15 @@ void rvm_destroy(rvm_t rvm, const char* seg_name){
   char *seg_path = (char*) malloc( strlen(rvm.directory) 
                                   + strlen(seg_name) + strlen(seg_file_ext)+1);
   strcpy(seg_path, rvm.directory);
+  strcat(seg_path, "/");
+  strcat(seg_path, seg_name);
   strcat(seg_path, seg_file_ext);
-  
-  if(rmdir(seg_path)){
-    fprintf(stderr, "Error deleting segment\n");
-  }
+
+  if(file_exist(seg_path)){
+    if(rmdir(seg_path)){
+      fprintf(stderr, "Error deleting segment\n");
+    }
+  } 
   
   free(seg_path);
 }
