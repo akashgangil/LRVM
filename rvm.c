@@ -11,7 +11,6 @@
 /*LINE_MAX*/
 #include <limits.h>
 
-
 #define LOG_FILE "rvm.log"
 #define COMMIT "COMMIT"
 #define CHECKPOINT "CHECKPOINT"
@@ -27,6 +26,9 @@ static char* seg_file_ext = ".seg";
 static char* log_file_ext = ".log";
 static trans_t global_tid = 0;
 
+static rvm_t* rvm;
+
+
 /*initialize the RVM library: creates the base directory*/
 rvm_t rvm_init(const char* directory) {
 
@@ -39,7 +41,7 @@ rvm_t rvm_init(const char* directory) {
     backup_segment_list = NULL;
 
     /*Create the backing directory for the RVM*/
-    rvm_t* rvm = (rvm_t*) malloc( sizeof(rvm_t) );
+    rvm = (rvm_t*) malloc( sizeof(rvm_t) );
     rvm->directory = (char*) malloc( strlen(directory) + 1 );
     strcpy(rvm -> directory, directory);
 
@@ -266,34 +268,7 @@ void rvm_commit_trans(trans_t tid){
     while(seg_node != NULL){
         printf("Seg Node : %d\n", seg_node->txn);
         if(seg_node->txn == tid){
-
-            int data_size = strlen(seg_node->segment->name)
-                + strlen(seg_node->segment->data)
-                + 1 /*for null char*/
-                + 1 /*for space*/
-                + 1 /*for newline*/
-                + strlen(COMMIT)
-                + 2 * strlen(SEPERATOR) + 1 + 1
-                ;
-
-            char* data_to_write = (char*) malloc(sizeof(char)*data_size);
-            strcpy(data_to_write, COMMIT);
-            strcat(data_to_write, SEPERATOR);
-            strcat(data_to_write, seg_node->segment->name);
-
-            offset_t* base_offset = seg_node -> offset;
-            while(base_offset != NULL) {
-                strcat(data_to_write, SEPERATOR);
-                char off[100];
-                sprintf(off, "%d-%d-%s", base_offset->offset_val
-                        , base_offset->size
-                        , (char*)(seg_node->segment->data)+base_offset->offset_val);
-                strcat(data_to_write, off);
-                base_offset = base_offset -> next_offset;
-            }
-            strcat(data_to_write, ":");
-            strcat(data_to_write, "\n");
-            fwrite(data_to_write, strlen(data_to_write), 1, log_file);
+            write_seg_to_file(seg_node, log_file);
         }
         seg_node = seg_node ->next_seg;
     }
@@ -480,11 +455,66 @@ void rvm_about_to_modify(trans_t tid, void* seg_base, int offset, int size){
         }
         seg_node = seg_node -> next_seg;
     }
-
 }
+
+/*void rvm_commit_trans_heavy(trans_t tid){
+   
+    segment_list_t* seg_node = segment_list;
+    FILE* seg_file;
+     
+    while(seg_node != NULL){
+      if(seg_node -> txn == tid ){
+        
+        char* seg_file_path = (char*)malloc(strlen(rvm -> directory)
+                                + strlen(seg_node->segment->name) + strlen(seg_file_ext)+1);
+
+        strcpy(seg_file_path, rvm.directory);
+        strcat(seg_file_path, "/");
+        strcat(seg_file_path, seg_name);
+        strcat(seg_file_path, seg_file_ext);
+
+        fprintf(stdout, "Writing to the segment file %s", seg_file_path);
+
+        
+      }
+    }
+}*/
 
 int file_exist (char *filename)
 {
     struct stat buffer;
     return (stat(filename, &buffer) == 0);
+}
+
+int write_seg_to_file(segment_list_t* seg_node, FILE* file){
+    int data_size = strlen(seg_node->segment->name)
+                    + strlen(seg_node->segment->data)
+                    + 1 /*for null char*/
+                    + 1 /*for space*/
+                    + 1 /*for newline*/
+                    + strlen(COMMIT)
+                    + 2 * strlen(SEPERATOR) + 1 + 1
+                    ;
+
+    char* data_to_write = (char*) malloc(sizeof(char)*data_size);
+    strcpy(data_to_write, COMMIT);
+    strcat(data_to_write, SEPERATOR);
+    strcat(data_to_write, seg_node->segment->name); 
+
+    offset_t* base_offset = seg_node -> offset;
+    while(base_offset != NULL) {
+        strcat(data_to_write, SEPERATOR);
+        char off[100];
+        sprintf(off, "%d-%d-%s", base_offset->offset_val
+                   , base_offset->size
+                   , (char*)(seg_node->segment->data)+base_offset->offset_val);
+        strcat(data_to_write, off);
+        base_offset = base_offset -> next_offset;
+    }
+    strcat(data_to_write, ":");
+    strcat(data_to_write, "\n");
+    if(fwrite(data_to_write, strlen(data_to_write), 1, file) >= 0) 
+        return 1;
+    else
+        return -1;
 }
