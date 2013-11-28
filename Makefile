@@ -21,4 +21,4 @@ abort: rvm
 	$(CC) $(OPTIONS) -o abort $(TESTCASESDIR)/abort.c rvm.o
 
 clean:
-	rm -rf *.o main basic multi rvm.log rvm_segments
+	rm -rf *.o main basic multi rvm.log rvm_segments abort

@@ -245,6 +245,27 @@ void check_segment_list(){
     }
 }
 
+void check_backup_segment_list(){
+
+    printf("check_segment_list called\n");
+    segment_list_t* segment_node = backup_segment_list;
+
+    while(segment_node != NULL){
+        fprintf(stderr, "TXN Id : %d\n",segment_node->txn);
+        fprintf(stderr,"Data:    %s\n", (char*)segment_node->segment->data);
+
+        offset_t* base_offset = segment_node->offset;
+
+        while(base_offset != NULL) {
+            printf("Offset:  %d\n", base_offset->offset_val);
+            printf("SIZE: %d\n", base_offset->size);
+            base_offset = base_offset -> next_offset;
+        }
+
+        segment_node = segment_node -> next_seg;
+    }
+}
+
 void rvm_commit_trans(trans_t tid){
     check_segment_list();
 
@@ -314,7 +335,8 @@ void rvm_commit_trans(trans_t tid){
 
             /* copy data */
             backup_seg->data = (void*)malloc(sizeof(char) * seg->size);
-            backup_seg->data = (char*)(seg_node->segment->data);
+            memcpy(backup_seg->data, seg->data, seg->size);
+
             fprintf(stderr, "backing up %s\n", backup_seg->data);
             fprintf(stderr, "backing up %s\n", backup_seg->data+1000);
             
@@ -369,7 +391,6 @@ void rvm_commit_trans(trans_t tid){
 }
 
 void rvm_abort_trans(trans_t tid) {
-    fprintf(stderr, "Aborting transaction!\n");
 
     segment_list_t* seg_node = segment_list;
     segment_list_t* prev = NULL;
@@ -378,10 +399,7 @@ void rvm_abort_trans(trans_t tid) {
     /* delete nodes from segment list */
     /* This is leaking so much memory */
     while(seg_node !=NULL) {
-        if (seg_node->txn == tid) {
-            fprintf(stderr, "Deleting %s\n", seg_node->segment->data);
-            fprintf(stderr, "Deleting %s\n", seg_node->segment->data+1000);
-            
+        if (seg_node->txn == tid) {            
             if (prev == NULL) {
                 segment_list = seg_node->next_seg;
             }
@@ -397,7 +415,6 @@ void rvm_abort_trans(trans_t tid) {
     /* copy backed up nodes to segment list */
     segment_list_t* backup_seg_node = backup_segment_list;
     while(backup_seg_node != NULL) {
-        fprintf(stderr, "tid %d\n", backup_seg_node->txn);
         
         if(backup_seg_node->txn == tid-1){
             segment_t* seg = backup_seg_node->segment;
@@ -411,7 +428,8 @@ void rvm_abort_trans(trans_t tid) {
 
             /* copy data */
             new_seg->data = (void*)malloc(sizeof(char) * seg->size);
-            new_seg->data = (char*)(seg->data);
+            new_seg->data = memcpy(new_seg->data, seg->data, seg->size);
+
             fprintf(stderr, "Restoring %s\n", new_seg->data);
             fprintf(stderr, "Restoring %s\n", new_seg->data+1000);
 
