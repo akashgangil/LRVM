@@ -457,7 +457,7 @@ void rvm_about_to_modify(trans_t tid, void* seg_base, int offset, int size){
     }
 }
 
-/*void rvm_commit_trans_heavy(trans_t tid){
+void rvm_commit_trans_heavy(trans_t tid){
    
     segment_list_t* seg_node = segment_list;
     FILE* seg_file;
@@ -468,17 +468,18 @@ void rvm_about_to_modify(trans_t tid, void* seg_base, int offset, int size){
         char* seg_file_path = (char*)malloc(strlen(rvm -> directory)
                                 + strlen(seg_node->segment->name) + strlen(seg_file_ext)+1);
 
-        strcpy(seg_file_path, rvm.directory);
+        strcpy(seg_file_path, rvm -> directory);
         strcat(seg_file_path, "/");
-        strcat(seg_file_path, seg_name);
+        strcat(seg_file_path, seg_node->segment->name);
         strcat(seg_file_path, seg_file_ext);
 
         fprintf(stdout, "Writing to the segment file %s", seg_file_path);
-
-        
+        write_seg_to_file(seg_node, seg_file);
       }
+      seg_node = seg_node -> next_seg;
     }
-}*/
+    fclose(seg_file);
+}
 
 int file_exist (char *filename)
 {
