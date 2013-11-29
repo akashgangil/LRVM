@@ -1,6 +1,5 @@
 #include "rvm.h"
 
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -489,10 +488,9 @@ void rvm_commit_trans_heavy(trans_t tid){
         
         char* seg_file_path = get_seg_file_path(seg_node->segment->name);
 
-        fprintf(stdout, "Writing to the segment file %s", seg_file_path);
+        fprintf(stdout, "Writing to the segment file %s\n", seg_file_path);
         seg_file = fopen(seg_file_path, "a");
         write_seg_to_file(seg_node, seg_file);
-        //fclose(seg_file);
       }
       seg_node = seg_node -> next_seg;
     }
@@ -543,6 +541,9 @@ int write_seg_to_file(segment_list_t* seg_node, FILE* file){
     }
     strcat(data_to_write, ":");
     strcat(data_to_write, "\n");
+
+    printf("Writing the following data to the seg file %s\n", data_to_write);
+
     if(fwrite(data_to_write, strlen(data_to_write), 1, file) >= 0) 
         return 1;
     else
