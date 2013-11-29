@@ -487,13 +487,7 @@ void rvm_commit_trans_heavy(trans_t tid){
     while(seg_node != NULL){
       if(seg_node -> txn == tid ){
         
-        char* seg_file_path = (char*)malloc(strlen(rvm -> directory)
-                                + strlen(seg_node->segment->name) + strlen(seg_file_ext)+1);
-
-        strcpy(seg_file_path, rvm -> directory);
-        strcat(seg_file_path, "/");
-        strcat(seg_file_path, seg_node->segment->name);
-        strcat(seg_file_path, seg_file_ext);
+        char* seg_file_path = get_seg_file_path(seg_node->segment->name);
 
         fprintf(stdout, "Writing to the segment file %s", seg_file_path);
         seg_file = fopen(seg_file_path, "a");
