@@ -52,4 +52,6 @@ int file_exist(char* filename);
 
 void check_segment_list(void);
 
+char* get_seg_file_path(const char* seg_name);
+
 #endif

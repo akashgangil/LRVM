@@ -62,7 +62,6 @@ rvm_t rvm_init(const char* directory) {
 
 /*Delete the segment file if it exists and is not mapped*/
 void rvm_destroy(rvm_t rvm, const char* seg_name){
-    /*TODO: don't we have to delete the segment from memory also? */
 
     segment_list_t* seg_node = segment_list;
     while(seg_node != NULL){
@@ -75,12 +74,7 @@ void rvm_destroy(rvm_t rvm, const char* seg_name){
     }
 
     /*Segment isnt mapped, delete the .seg file*/
-    char *seg_path = (char*) malloc( strlen(rvm.directory)
-            + strlen(seg_name) + strlen(seg_file_ext)+1);
-    strcpy(seg_path, rvm.directory);
-    strcat(seg_path, "/");
-    strcat(seg_path, seg_name);
-    strcat(seg_path, seg_file_ext);
+    char* seg_path = get_seg_file_path(seg_name);
 
     if(file_exist(seg_path)){
         if(rmdir(seg_path)){
@@ -312,8 +306,8 @@ void rvm_commit_trans(trans_t tid){
             backup_seg->data = (void*)malloc(sizeof(char) * seg->size);
             memcpy(backup_seg->data, seg->data, seg->size);
 
-            fprintf(stderr, "backing up %s\n", backup_seg->data);
-            fprintf(stderr, "backing up %s\n", backup_seg->data+1000);
+            fprintf(stderr, "backing up %s\n", (char*)backup_seg->data);
+            fprintf(stderr, "backing up %s\n", (char*)backup_seg->data+1000);
             
             /* copy size */
             backup_seg->size = seg->size;
@@ -405,8 +399,8 @@ void rvm_abort_trans(trans_t tid) {
             new_seg->data = (void*)malloc(sizeof(char) * seg->size);
             new_seg->data = memcpy(new_seg->data, seg->data, seg->size);
 
-            fprintf(stderr, "Restoring %s\n", new_seg->data);
-            fprintf(stderr, "Restoring %s\n", new_seg->data+1000);
+            fprintf(stderr, "Restoring %s\n", (char*)new_seg->data);
+            fprintf(stderr, "Restoring %s\n", (char*)new_seg->data+1000);
 
             /* copy size */
             new_seg->size = seg->size;
@@ -502,17 +496,30 @@ void rvm_commit_trans_heavy(trans_t tid){
         strcat(seg_file_path, seg_file_ext);
 
         fprintf(stdout, "Writing to the segment file %s", seg_file_path);
+        seg_file = fopen(seg_file_path, "a");
         write_seg_to_file(seg_node, seg_file);
+        //fclose(seg_file);
       }
       seg_node = seg_node -> next_seg;
     }
-    fclose(seg_file);
 }
 
 int file_exist (char *filename)
 {
     struct stat buffer;
     return (stat(filename, &buffer) == 0);
+}
+
+char* get_seg_file_path(const char* seg_name){
+
+    char *seg_path = (char*) malloc( strlen(rvm->directory)
+            + strlen(seg_name) + strlen(seg_file_ext)+1);
+    strcpy(seg_path, rvm->directory);
+    strcat(seg_path, "/");
+    strcat(seg_path, seg_name);
+    strcat(seg_path, seg_file_ext);
+  
+    return seg_path;
 }
 
 int write_seg_to_file(segment_list_t* seg_node, FILE* file){
