@@ -1,5 +1,4 @@
-/* abort.c - test that aborting a modification returns the segment to
- * its initial state */
+/* compare_heavy_trans.c - Compare Elapsed time of commit_heavy_trans for different transaction loads */
 
 #include "../rvm.h"
 #include <unistd.h>
@@ -18,8 +17,6 @@ int main(int argc, char **argv)
      trans_t trans;
      
      rvm = rvm_init("rvm_segments");
-     
-     rvm_destroy(rvm, "testseg");
 
      int i;
 
@@ -43,7 +40,7 @@ int main(int argc, char **argv)
      }
 
      
-     rvm_commit_trans(trans);
+     rvm_commit_trans_heavy(trans);
      for(i=0; i<16; ++i){
         free(segs[i]);
      }
