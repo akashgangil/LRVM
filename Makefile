@@ -24,11 +24,13 @@ multi-abort: rvm
 truncate: rvm
 	$(CC) $(OPTIONS) -o truncate $(TESTCASESDIR)/truncate.c rvm.a
 
-compare_trans: rvm
-	$(CC) $(OPTIONS) -o compare_trans $(TESTCASESDIR)/compare_trans.c rvm.a
+compare_trans: rvm timer.o
+	$(CC) $(OPTIONS) -o compare_trans compare_trans.c rvm.a timer.o
 
-compare_heavy_trans: rvm
-	$(CC) $(OPTIONS) -o compare_heavy_trans $(TESTCASESDIR)/compare_heavy_trans.c rvm.a
+compare_heavy_trans: rvm timer.o
+	$(CC) $(OPTIONS) -o compare_heavy_trans compare_heavy_trans.c rvm.a timer.o
+
+timer.o: timer.h
 
 clean:
 	rm -rf *.o main basic multi rvm.log rvm_segments abort rvm.a multi-abort compare truncate rvm_undo.log

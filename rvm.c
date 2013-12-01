@@ -293,7 +293,7 @@ void rvm_commit_trans_heavy(trans_t tid){
 
             char* seg_file_path = get_seg_file_path(seg_node->segment->name);
 
-            fprintf(stdout, "Writing to the segment file %s\n", seg_file_path);
+            //fprintf(stdout, "Writing to the segment file %s\n", seg_file_path);
             seg_file = fopen(seg_file_path, "a");
             write_seg_to_file(seg_node, seg_file);
             write_seg_to_file(seg_node, undo_file);

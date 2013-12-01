@@ -17,6 +17,13 @@
 
 #include <sys/time.h>
 
+struct stopwatch_t
+{
+      struct timeval t_start_;
+        struct timeval t_stop_;
+          int is_running_;
+};
+
 static
 long double
 elapsed (struct timeval start, struct timeval stop)
@@ -44,8 +51,8 @@ stopwatch_elapsed (struct stopwatch_t* T)
 void
 stopwatch_init (void)
 {
-  fprintf (stderr, "Timer: %s\n", TIMER_DESC);
-  fprintf (stderr, "Timer resolution: ~ 1 us (?)\n");
+  //fprintf (stderr, "Timer: %s\n", TIMER_DESC);
+  //fprintf (stderr, "Timer resolution: ~ 1 us (?)\n");
   fflush (stderr);
 }
 
