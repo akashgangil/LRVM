@@ -46,7 +46,6 @@ int main(int argc, char **argv)
 
      
      rvm_commit_trans(trans);
-//     rvm_commit_trans_heavy(trans);
      for(i=0; i<16; ++i){
         free(segs[i]);
      }

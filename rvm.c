@@ -23,7 +23,8 @@ static segment_list_t* backup_segment_list;
 static char* seg_file_ext = ".seg";
 static char* log_file_ext = ".log";
 static trans_t global_tid = 0;
-static char LOG_FILE[10] = "rvm.log";
+static char* LOG_FILE = "rvm.log";
+static char* UNDO_FILE = "rvm_undo.log";
 static rvm_t* rvm;
 
 
@@ -291,6 +292,9 @@ void rvm_commit_trans_heavy(trans_t tid){
 
     segment_list_t* seg_node = segment_list;
     FILE* seg_file;
+    FILE* undo_file;
+
+    undo_file = fopen(UNDO_FILE, "a");
 
     while(seg_node != NULL){
         if(seg_node -> txn == tid ){
@@ -300,10 +304,11 @@ void rvm_commit_trans_heavy(trans_t tid){
             fprintf(stdout, "Writing to the segment file %s\n", seg_file_path);
             seg_file = fopen(seg_file_path, "a");
             write_seg_to_file(seg_node, seg_file);
+            write_seg_to_file(seg_node, undo_file);
         }
         seg_node = seg_node -> next_seg;
     }
-
+    fclose(undo_file);
     remove_seg_from_transaction(tid);
 }
 
