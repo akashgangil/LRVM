@@ -9,3 +9,5 @@ multi-abort
 truncate
 compare_trans
 compare_heavy_trans
+
+rvm_segments/
