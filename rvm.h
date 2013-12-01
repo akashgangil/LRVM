@@ -1,6 +1,8 @@
 #ifndef _RVM_H_
 #define _RVM_H_
-  
+
+#include<stdio.h>
+
 typedef struct {
   char*     name;
   int       size;
@@ -48,8 +50,17 @@ void rvm_abort_trans(trans_t tid);
 
 void rvm_truncate_log(rvm_t rvm);
 
-int file_exist(char* filename);
+/*Utility Functions*/
+int file_exist(char*);
 
 void check_segment_list(void);
+
+char* get_seg_file_path(const char*);
+
+int write_seg_to_file(segment_list_t* , FILE*);
+
+void restore_seg_from_log(char* seg_name, segment_t* seg);
+
+void remove_seg_from_transaction(trans_t tid);
 
 #endif

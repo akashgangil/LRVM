@@ -1,7 +1,7 @@
 /* abort.c - test that aborting a modification returns the segment to
  * its initial state */
 
-#include "rvm.h"
+#include "../rvm.h"
 #include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -51,7 +51,7 @@ int main(int argc, char **argv)
      if(strcmp(seg+OFFSET2, TEST_STRING1)) {
 	  printf("ERROR: second hello is incorrect (%s)\n",
 		 seg+OFFSET2);
-	  exit(2);
+ 	  exit(2);
      }
 
      if(strcmp(seg, TEST_STRING1)) {
