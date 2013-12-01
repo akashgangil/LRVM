@@ -233,7 +233,8 @@ void rvm_commit_trans(trans_t tid){
 
     remove_seg_from_transaction(tid);
     printf("Log file closed\n");
-//    fclose(log_file);
+    fflush(log_file);
+    //    fclose(log_file);
 }
 
 void rvm_abort_trans(trans_t tid) {
@@ -444,13 +445,10 @@ void restore_seg_from_log(char* seg_name, segment_t* seg){
         printf("Current : %d\n", ftell(log_file));
 
         if(log_file != NULL){
-            printf("Here 1\n");
             while(fgets(line, LINE_MAX, log_file) != NULL){
-                printf("Here 2\n");
                 token_count1 = 0;
                 token1 = strtok_r(line, ":", &ch1);
                 while(token1 != NULL){
-                    printf("Here 3\n");
                     token_count1++;
                     if(token_count1 == 2)
                         if(strcmp(token1, seg_name)) break;
