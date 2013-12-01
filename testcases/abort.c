@@ -61,7 +61,7 @@ int main(int argc, char **argv)
      }
      
 
-     //rvm_unmap(rvm, seg);
+     rvm_unmap(rvm, seg);
      printf("OK\n");
      exit(0);
 }
