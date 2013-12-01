@@ -31,4 +31,4 @@ compare_heavy_trans: rvm
 	$(CC) $(OPTIONS) -o compare_heavy_trans $(TESTCASESDIR)/compare_heavy_trans.c rvm.a
 
 clean:
-	rm -rf *.o main basic multi rvm.log rvm_segments abort rvm.a multi-abort compare truncate
+	rm -rf *.o main basic multi rvm.log rvm_segments abort rvm.a multi-abort compare truncate rvm_undo.log

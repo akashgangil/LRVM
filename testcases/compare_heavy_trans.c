@@ -8,8 +8,6 @@
 #include <string.h>
 
 #define TEST_STRING1 "hello, world"
-#define TEST_STRING2 "bleg!"
-#define OFFSET2 1000
 
 
 int main(int argc, char **argv)

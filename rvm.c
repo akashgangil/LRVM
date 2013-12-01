@@ -77,7 +77,7 @@ void rvm_destroy(rvm_t rvm, const char* seg_name){
 
     if(file_exist(seg_path)){
         if(rmdir(seg_path)){
-            fprintf(stderr, "Error deleting segment\n");
+            fprintf(stderr, "Error deleting segment: %s\n", seg_path);
         }
     }
 
@@ -87,7 +87,7 @@ void rvm_destroy(rvm_t rvm, const char* seg_name){
 /*Map the segment from disk to memory, if it doesnt exist on disk create it*/
 void* rvm_map(rvm_t rvm, const char* seg_name, int size_to_create){
 
-    fprintf(stdout, "rvm_map called\n");
+    //fprintf(stdout, "rvm_map called\n");
 
     segment_t* seg = (segment_t*) calloc(1, sizeof(segment_t));
 
@@ -98,16 +98,12 @@ void* rvm_map(rvm_t rvm, const char* seg_name, int size_to_create){
 
     seg->size = size_to_create;
 
-    printf("created\n");
-
     /*Make a segment node*/
     segment_list_t* new_seg = (segment_list_t*)malloc(sizeof(segment_list_t));
     new_seg->segment  = seg;
     new_seg->next_seg = NULL;
     new_seg->txn      = -1;
     new_seg->offset   = NULL;
-
-    printf("created2\n");
 
     /*Add the segment to the list of segments*/
     segment_list_t* seg_node = segment_list;
@@ -120,11 +116,9 @@ void* rvm_map(rvm_t rvm, const char* seg_name, int size_to_create){
         seg_node -> next_seg = new_seg;
     }
 
-    printf("added\n");
 
     restore_seg_from_log(seg_name, seg);
 
-    printf("Returning\n");
     return seg->data;
 }
 
@@ -134,7 +128,7 @@ trans_t rvm_begin_trans(rvm_t rvm, int num_segs, void** seg_bases){
     segment_list_t* seg_node = segment_list;
     int seg_it = 0;
 
-    printf("Beginning Transaction\n");
+    //printf("Beginning Transaction\n");
 
     /* Check if someone else is doing a transaction on same segment */
     for(seg_it=0; seg_it < num_segs; ++seg_it){ 
@@ -151,23 +145,22 @@ trans_t rvm_begin_trans(rvm_t rvm, int num_segs, void** seg_bases){
     seg_it = 0;
     for(seg_it=0; seg_it<num_segs; ++seg_it){
         seg_node = segment_list;
-        printf("IT: %d\n", seg_it);
         while(seg_node != NULL){
             if(seg_node->segment->data == seg_bases[seg_it]) {
                 seg_node->txn = tid;
-                printf("Set tid\n");
+                //printf("Set tid\n");
             }
             seg_node = seg_node -> next_seg;
         }
     }
 
-    printf("TID: %d\n", tid);
+    //printf("TID: %d\n", tid);
     return tid;
 }
 
 void check_segment_list(){
 
-    printf("check_segment_list called\n");
+    //printf("check_segment_list called\n");
     segment_list_t* segment_node = segment_list;
 
     while(segment_node != NULL){
@@ -211,7 +204,7 @@ void check_backup_segment_list(){
 }
 
 void rvm_commit_trans(trans_t tid){
-    check_segment_list();
+   // check_segment_list();
 
     FILE* log_file;
     log_file = fopen(LOG_FILE, "a");
@@ -221,11 +214,11 @@ void rvm_commit_trans(trans_t tid){
 
     int seg_it = 0;
 
-    printf("writing to the log file for transaction id: %d\n", tid);
+    //printf("writing to the log file for transaction id: %d\n", tid);
 
     segment_list_t* seg_node = segment_list;
     while(seg_node != NULL){
-        printf("Seg Node : %d\n", seg_node->txn);
+        //printf("Seg Node : %d\n", seg_node->txn);
         if(seg_node->txn == tid){
             write_seg_to_file(seg_node, log_file);
         }
@@ -233,15 +226,14 @@ void rvm_commit_trans(trans_t tid){
     }
 
     remove_seg_from_transaction(tid);
-    printf("Log file closed\n");
+    //printf("Log file closed\n");
     fflush(log_file);
-    //    fclose(log_file);
 }
 
 void rvm_abort_trans(trans_t tid) {
-    printf("Abort and copy back\n");
+    //printf("Abort and copy back\n");
     
-    check_segment_list();
+    //check_segment_list();
 
     segment_list_t* seg_node = segment_list;
 
@@ -253,13 +245,13 @@ void rvm_abort_trans(trans_t tid) {
         seg_node = seg_node -> next_seg;
     }
 
-    printf("Abort txn\n");
-    check_segment_list();
+    //printf("Abort txn\n");
+    //check_segment_list();
 }
 
 void rvm_about_to_modify(trans_t tid, void* seg_base, int offset, int size){
 
-    printf("About to modify %d  %d\n", offset , size);
+    //printf("About to modify %d  %d\n", offset , size);
 
     segment_list_t* seg_node = segment_list;
 
@@ -329,7 +321,7 @@ void rvm_truncate_log(rvm_t rvm){
             char *data = (char*)malloc(strlen(line)  + 1);
             strcpy(data, line);
 
-            printf("LINE: %s\n", line);
+            //printf("LINE: %s\n", line);
 
             token_count1 = 0;
             token1 = strtok_r(line, ":", &ch1);
@@ -343,7 +335,7 @@ void rvm_truncate_log(rvm_t rvm){
                 token1 = strtok_r(NULL, ":", &ch1);
             }
 
-            printf("LINE: %s\n", data);
+            //printf("LINE: %s\n", data);
 
             fwrite(data, strlen(data), 1, seg_file);
             fclose(seg_file);
@@ -405,7 +397,7 @@ int write_seg_to_file(segment_list_t* seg_node, FILE* file){
     strcat(data_to_write, ":");
     strcat(data_to_write, "\n");
 
-    printf("Writing the following data to the seg file %s\n", data_to_write);
+    //printf("Writing the following data to the seg file %s\n", data_to_write);
 
     if(fwrite(data_to_write, strlen(data_to_write), 1, file) >= 0) 
         return 1;
@@ -418,8 +410,8 @@ void restore_seg_from_log(char* seg_name, segment_t* seg){
     FILE* log_file;
     if(file_exist(LOG_FILE)) {
 
-        printf("FILE EXISTS\n");
-        printf("%s\n", LOG_FILE);
+        //printf("FILE EXISTS\n");
+        //printf("%s\n", LOG_FILE);
 
         log_file = fopen("rvm.log", "r");
 
@@ -428,27 +420,10 @@ void restore_seg_from_log(char* seg_name, segment_t* seg){
             return ;
         }
    
-        printf("Printing...\n");
-        int c;
-        if (log_file) {
-            while ((c = getc(log_file)) != EOF)
-                putchar(c);
-        }
-        printf("End...\n");
-
         char *ch1, *ch2, *token1, *token2;
         char line[LINE_MAX];
         int token_count1, token_count2, pos;
-        
-        fseek(log_file, 0, SEEK_END);
-        printf("Current : %d\n", ftell(log_file));
-
-        fseek(log_file, 0, SEEK_SET);
-        printf("Current : %d\n", ftell(log_file));
-        
-        fseek(log_file, 4, SEEK_CUR);
-        printf("Current : %d\n", ftell(log_file));
-
+       
         if(log_file != NULL){
             while(fgets(line, LINE_MAX, log_file) != NULL){
                 token_count1 = 0;
@@ -465,7 +440,7 @@ void restore_seg_from_log(char* seg_name, segment_t* seg){
                             if(token_count2 == 1) pos = atoi(token2);
                             if(token_count2 == 3) {
                                 strcpy((char*)seg->data + pos, token2);
-                                printf("PUT token2  \n%s \n[%s]\n", token2,  (char*)seg->data+pos);
+                                //printf("PUT token2  \n%s \n[%s]\n", token2,  (char*)seg->data+pos);
                             }
                             token2 = strtok_r(NULL, "-", &ch2);
                         }
@@ -473,7 +448,6 @@ void restore_seg_from_log(char* seg_name, segment_t* seg){
                     token1 = strtok_r(NULL, ":", &ch1);
                 }
             }
-            printf("I didnt get a line!\n");
         }
 
      //   fclose(log_file);
