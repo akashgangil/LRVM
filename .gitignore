@@ -2,3 +2,10 @@
 .#*
 rvm.a
 rvm.log
+basic
+multi
+abort
+multi-abort
+truncate
+compare_trans
+compare_heavy_trans
