@@ -30,6 +30,7 @@ static rvm_t* rvm;
 
 /*initialize the RVM library: creates the base directory*/
 rvm_t rvm_init(const char* directory) {
+    fprintf(stdout, "Initialize the rvm library with the directory %s\n", directory);
 
     /*Initialize the segment list*/
     segment_list = (segment_list_t*) malloc( sizeof(segment_list_t*) );
@@ -61,6 +62,7 @@ rvm_t rvm_init(const char* directory) {
 
 /*Delete the segment file if it exists and is not mapped*/
 void rvm_destroy(rvm_t rvm, const char* seg_name){
+    fprintf(stdout, "Destroy the segment %s\n", seg_name);
 
     segment_list_t* seg_node = segment_list;
     while(seg_node != NULL){
@@ -86,6 +88,7 @@ void rvm_destroy(rvm_t rvm, const char* seg_name){
 
 /*Map the segment from disk to memory, if it doesnt exist on disk create it*/
 void* rvm_map(rvm_t rvm, const char* seg_name, int size_to_create){
+    fprintf(stdout, "Map the segment %s\n", seg_name);
 
     //fprintf(stdout, "rvm_map called\n");
 
@@ -124,6 +127,7 @@ void* rvm_map(rvm_t rvm, const char* seg_name, int size_to_create){
 
 
 trans_t rvm_begin_trans(rvm_t rvm, int num_segs, void** seg_bases){
+    fprintf(stdout, "Begin transaction on %d segments\n", num_segs);
 
     segment_list_t* seg_node = segment_list;
     int seg_it = 0;
@@ -158,6 +162,7 @@ trans_t rvm_begin_trans(rvm_t rvm, int num_segs, void** seg_bases){
     return tid;
 }
 
+/*Function for debugging purposes: Prints all the segment in the global segment list*/
 void check_segment_list(){
 
     //printf("check_segment_list called\n");
@@ -181,7 +186,7 @@ void check_segment_list(){
         segment_node = segment_node -> next_seg;
     }
 }
-
+/*Function for debugging purposes*/
 void check_backup_segment_list(){
 
     printf("check_segment_list called\n");
@@ -204,6 +209,7 @@ void check_backup_segment_list(){
 }
 
 void rvm_commit_trans(trans_t tid){
+    fprintf(stdout, "Commit Transaction %d\n", tid);
    // check_segment_list();
 
     FILE* log_file;
@@ -231,6 +237,7 @@ void rvm_commit_trans(trans_t tid){
 }
 
 void rvm_abort_trans(trans_t tid) {
+    fprintf(stdout, "Abort transaction %d\n", tid);
     //printf("Abort and copy back\n");
     
     //check_segment_list();
@@ -250,6 +257,8 @@ void rvm_abort_trans(trans_t tid) {
 }
 
 void rvm_about_to_modify(trans_t tid, void* seg_base, int offset, int size){
+    fprintf(stdout, "About to modify segment in transaction %d with offset %d and size %d\n", 
+                                tid, offset, size);
 
     //printf("About to modify %d  %d\n", offset , size);
 
@@ -281,6 +290,7 @@ void rvm_about_to_modify(trans_t tid, void* seg_base, int offset, int size){
 
 
 void rvm_commit_trans_heavy(trans_t tid){
+    fprintf(stdout, "Commit all the segments in the transaction %d\n", tid);
 
     segment_list_t* seg_node = segment_list;
     FILE* seg_file;
@@ -305,7 +315,7 @@ void rvm_commit_trans_heavy(trans_t tid){
 }
 
 void rvm_truncate_log(rvm_t rvm){
-
+    fprintf(stdout, "Truncate log\n");
     FILE* log_file;
     FILE* seg_file;
 
@@ -370,6 +380,7 @@ char* get_seg_file_path(const char* seg_name){
 }
 
 int write_seg_to_file(segment_list_t* seg_node, FILE* file){
+    fprintf(stdout, "Writing the segment %s  to the disk \n", seg_node->segment->name);
     int data_size = strlen(seg_node->segment->name)
         + strlen(seg_node->segment->data)
         + 1 /*for null char*/
@@ -405,7 +416,8 @@ int write_seg_to_file(segment_list_t* seg_node, FILE* file){
         return -1;
 }
 
-void restore_seg_from_log(char* seg_name, segment_t* seg){
+void restore_seg_from_log(const char* seg_name, segment_t* seg){
+    fprintf(stdout, "Restoring segment %s from the log file\n", seg_name);
     /*Check if the segment is in the log file*/
     FILE* log_file;
     if(file_exist(LOG_FILE)) {
@@ -449,8 +461,6 @@ void restore_seg_from_log(char* seg_name, segment_t* seg){
                 }
             }
         }
-
-     //   fclose(log_file);
     }
 
 }
@@ -459,6 +469,7 @@ void restore_seg_from_log(char* seg_name, segment_t* seg){
  longer involved in the transaction
  */
 void remove_seg_from_transaction(trans_t tid){
+    fprintf(stdout, "Removing segment from transaction %d\n", tid);
     segment_list_t* seg_node = segment_list;
     while(seg_node != NULL){
         if(seg_node->txn == tid){
