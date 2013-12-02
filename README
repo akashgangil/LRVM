@@ -1,0 +1,3 @@
+#Compilation instructions to generate static library librvm.a
+make clean
+make
