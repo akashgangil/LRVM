@@ -3,7 +3,7 @@ OPTIONS= -g
 
 TESTCASESDIR=testcases
 
-all: basic multi abort multi-abort truncate compare_trans compare_heavy_trans
+all: compare_trans compare_heavy_trans basic multi abort multi-abort truncate
 
 rvm:
 	$(CC) $(OPTIONS) -c rvm.c
@@ -34,3 +34,6 @@ timer.o: timer.h
 
 clean:
 	rm -rf *.o main basic multi rvm.log rvm_segments abort rvm.a multi-abort compare_trans compare_heavy_trans truncate rvm_undo.log
+
+#clean:
+#	rm librvm.a compare_trans compare_heavy_trans
