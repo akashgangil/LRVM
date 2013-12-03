@@ -59,7 +59,7 @@ char* get_seg_file_path(const char*);
 
 int write_seg_to_file(segment_list_t* , FILE*);
 
-void restore_seg_from_log(char* seg_name, segment_t* seg);
+void restore_seg_from_log(const char* seg_name, segment_t* seg);
 
 void remove_seg_from_transaction(trans_t tid);
 
