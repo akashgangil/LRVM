@@ -17,9 +17,6 @@
 /*Segment List: Maintains a list of segment names currently mapped*/
 static segment_list_t* segment_list;
 
-/* maintains a backup of segment_list */
-static segment_list_t* backup_segment_list;
-
 static char* seg_file_ext = ".seg";
 static char* log_file_ext = ".log";
 static trans_t global_tid = 0;
@@ -35,10 +32,6 @@ rvm_t rvm_init(const char* directory) {
     /*Initialize the segment list*/
     segment_list = (segment_list_t*) malloc( sizeof(segment_list_t*) );
     segment_list = NULL;
-
-    /*Initialize the backup segment list*/
-    backup_segment_list = (segment_list_t*) malloc( sizeof(segment_list_t*) );
-    backup_segment_list = NULL;
 
     /*Create the backing directory for the RVM*/
     rvm = (rvm_t*) malloc( sizeof(rvm_t) );
@@ -186,31 +179,10 @@ void check_segment_list(){
         segment_node = segment_node -> next_seg;
     }
 }
-/*Function for debugging purposes*/
-void check_backup_segment_list(){
-
-    printf("check_segment_list called\n");
-    segment_list_t* segment_node = backup_segment_list;
-
-    while(segment_node != NULL){
-        fprintf(stderr, "TXN Id : %d\n",segment_node->txn);
-        fprintf(stderr,"Data:    %s\n", (char*)segment_node->segment->data);
-
-        offset_t* base_offset = segment_node->offset;
-
-        while(base_offset != NULL) {
-            printf("Offset:  %d\n", base_offset->offset_val);
-            printf("SIZE: %d\n", base_offset->size);
-            base_offset = base_offset -> next_offset;
-        }
-
-        segment_node = segment_node -> next_seg;
-    }
-}
 
 void rvm_commit_trans(trans_t tid){
     fprintf(stdout, "Commit Transaction %d\n", tid);
-   // check_segment_list();
+    // check_segment_list();
 
     FILE* log_file;
     log_file = fopen(LOG_FILE, "a");
@@ -239,7 +211,7 @@ void rvm_commit_trans(trans_t tid){
 void rvm_abort_trans(trans_t tid) {
     fprintf(stdout, "Abort transaction %d\n", tid);
     //printf("Abort and copy back\n");
-    
+
     //check_segment_list();
 
     segment_list_t* seg_node = segment_list;
@@ -258,7 +230,7 @@ void rvm_abort_trans(trans_t tid) {
 
 void rvm_about_to_modify(trans_t tid, void* seg_base, int offset, int size){
     fprintf(stdout, "About to modify segment in transaction %d with offset %d and size %d\n", 
-                                tid, offset, size);
+            tid, offset, size);
 
     //printf("About to modify %d  %d\n", offset , size);
 
@@ -359,6 +331,27 @@ void rvm_truncate_log(rvm_t rvm){
 }   
 
 void rvm_unmap(rvm_t rvm, void* seg_base){
+    fprintf(stdout, "Unmap the segment\n"); 
+    segment_list_t* seg_node = segment_list;
+   
+    while(seg_node != NULL){
+   
+        segment_list_t *currP, *prevP;
+        prevP = NULL;   
+    
+        for (currP = seg_node; currP != NULL; prevP = currP, currP = currP->next_seg) {
+            if (currP->segment->data == seg_base) { 
+                if (prevP == NULL) {
+                     segment_list = currP->next_seg;
+                } else {
+                     prevP->next_seg = currP->next_seg;
+                }
+                free(currP);
+                return;
+            }
+        }
+        seg_node = seg_node -> next_seg;
+    }
 }
 
 int file_exist (char *filename)
@@ -431,11 +424,11 @@ void restore_seg_from_log(const char* seg_name, segment_t* seg){
             fprintf(stderr, "Failed to open segment file %s", LOG_FILE);
             return ;
         }
-   
+
         char *ch1, *ch2, *token1, *token2;
         char line[LINE_MAX];
         int token_count1, token_count2, pos;
-       
+
         if(log_file != NULL){
             while(fgets(line, LINE_MAX, log_file) != NULL){
                 token_count1 = 0;
@@ -466,8 +459,8 @@ void restore_seg_from_log(const char* seg_name, segment_t* seg){
 }
 
 /*Should be called in the commit functions as the segment is no 
- longer involved in the transaction
- */
+  longer involved in the transaction
+  */
 void remove_seg_from_transaction(trans_t tid){
     fprintf(stdout, "Removing segment from transaction %d\n", tid);
     segment_list_t* seg_node = segment_list;
