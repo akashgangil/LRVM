@@ -1,3 +1,6 @@
 #Compilation instructions to generate static library librvm.a
 make clean
 make
+
+References:
+http://www.cs.berkeley.edu/~brewer/cs262/lrvm.pdf
